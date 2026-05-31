@@ -1,0 +1,1255 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>BO Daily Account</title>
+
+<style>
+
+/* =========================
+   ROOT SETTINGS
+========================= */
+
+:root{
+
+--main-font:13px;
+--header-font:13px;
+--date-font:13px;
+--button-font:13px;
+--heading-font:14px;
+
+--table-border:2px solid #444;
+--cell-border:1px solid #000;
+
+--input-height:100%;
+--input-font:10px;
+
+--button-height:15px;
+
+--bg-color:#f5f5f5;
+--header-color:#d89aa3;
+--left-color:#b7d3c2;
+--right-color:#d8c4b2;
+--stamp-color:#FEFFD7;
+--closing-color:#79D3EE;
+--cashstamp-color:lightgreen;
+}
+
+/* =========================
+   GLOBAL
+========================= */
+
+*{
+box-sizing:border-box;
+-webkit-tap-highlight-color:transparent;
+}
+
+body{
+margin:0;
+padding:10px;
+font-family:arial;
+background:var(--bg-color);
+}
+
+/* =========================
+   TABLES
+========================= */
+
+table{
+border-collapse:collapse;
+background:#fff;
+width:100%;
+}
+
+td,th{
+border:var(--cell-border);
+padding:2px;
+text-align:center;
+font-size:var(--main-font);
+}
+
+/* MAIN TABLE */
+
+.main-table{
+max-width:1200px;
+margin:auto;
+border:var(--table-border);
+  height:10px;
+}
+
+/* CASH TABLE */
+
+.cash-table{
+width:80%;
+
+margin:auto;
+border:var(--table-border);
+}
+
+/* REPORT TABLE */
+
+.report-table{
+min-width:1400px;
+border:var(--table-border);
+}
+
+
+.report-table td:first-child{
+    position:sticky;
+    left:0;
+    z-index:1;
+    background:#fff;
+}
+.report-table th:first-child,
+.report-table th{
+    z-index:3;
+    background:#cac6c67e;
+}
+/* ROW HEIGHT*/
+.report-table tr{
+height:25px;
+border: 1px;
+}
+
+/* =========================
+   COLORS
+========================= */
+
+.header{
+background:var(--header-color);
+font-weight:bold;
+font-size:var(--header-font);
+}
+
+.left{
+background:var(--left-color);
+font-weight:bold;
+}
+
+.right{
+background:var(--right-color);
+font-weight:bold;
+}
+
+.stamps{
+background:var(--stamp-color);
+font-weight:bold;
+}
+
+/* =========================
+   INPUTS
+========================= */
+
+input{
+width:100%;
+height:100%;
+border:none;
+outline:none;
+background:transparent;
+text-align:center;
+font-size:var(--input-font);
+}
+
+input[type="number"]{
+appearance:textfield;
+  height:100%;
+}
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button{
+-webkit-appearance:none;
+margin:0;
+}
+
+input[type="date"]{
+width:auto;
+font-size:var(--date-font);
+font-weight:bold;
+}
+
+input[type="month"]{
+width:120px;
+  height:50px;
+background:#fff;
+border:1px solid #ccc;
+border-radius:8px;
+}
+
+input[readonly]{
+background:#efefef;
+}
+
+/* =========================
+   BUTTONS
+========================= */
+
+button{
+height:var(--button-height);
+padding:0 5px;
+border:none;
+border-radius:10px;
+background:#3949ab;
+color:white;
+font-size:var(--button-font);
+cursor:pointer;
+margin:4px;
+}
+
+button:hover{
+opacity:0.9;
+}
+
+/* =========================
+   HEADINGS
+========================= */
+
+h1,h3{
+font-size:var(--heading-font);
+}
+
+/* =========================
+   REPORT
+========================= */
+
+#report{
+overflow:auto;
+width:100%;
+margin-top:20px;
+}
+
+/* =========================
+   MOBILE
+========================= */
+
+@media(max-width:768px){
+
+:root{
+
+--main-font:13px;
+--header-font:14px;
+--date-font:13px;
+--button-font:13px;
+--heading-font:14px;
+
+--input-height:100%;
+--input-font:13px;
+
+--button-height:30px;
+}
+
+body{
+padding:5px;
+}
+
+.cash-table{
+width:80%;
+}
+
+.main-table tr{
+height:27px;
+}
+
+.cash-table tr{
+  width:80%;
+height:27px;
+}
+
+button{
+min-width:40px;
+}
+}
+
+/* =========================
+   PRINT
+========================= */
+
+@media print{
+
+     .print-hide{
+        display:none !important;
+    }
+body *{
+visibility:hidden;
+}
+
+#report,
+#report *{
+visibility:visible;
+}
+
+#report{
+position:absolute;
+top:0;
+left:0;
+width:100%;
+overflow:visible !important;
+}
+
+button,
+input[type="month"]{
+display:none;
+}
+
+@page{
+size:a3 landscape;
+margin:5mm;
+}
+}
+
+</style>
+
+</head>
+
+<body>
+
+<!-- MAIN TABLE -->
+
+<table class="main-table">
+
+<tr>
+<td colspan="4"class="header">
+BO DAILY ACCOUNT
+<br>
+<button onclick="prevDay()">&#9664;</button>
+
+<input type="date" id="date">
+
+<button onclick="nextDay()">&#9654;</button>
+
+</td>
+</tr>
+
+<tr>
+<td class="left">Opening Bal</td>
+<td><input id="opening" type="number" min="0"></td>
+
+<td class="right">Cash Sent</td>
+<td><input id="cashSent" type="number" min="0"></td>
+</tr>
+
+<tr>
+<td class="left">Cash Received</td>
+<td><input id="received" type="number" min="0"></td>
+
+<td class="right">SB-W</td>
+<td><input id="sbw" type="number" min="0"></td>
+</tr>
+
+<tr>
+<td class="left">SB</td>
+<td><input id="sb" type="number" min="0"></td>
+
+<td class="right">IPPB-W</td>
+<td><input id="ippbw" type="number" min="0"></td>
+</tr>
+
+<tr>
+<td class="left">RD</td>
+<td><input id="rd" type="number" min="0"></td>
+
+<td class="right">MO Paid</td>
+<td><input id="mopaid" type="number" min="0"></td>
+</tr>
+
+<tr>
+<td class="left">RD Default Fee</td>
+<td><input id="rdf" type="number" min="0"></td>
+
+<td class="right">Rebate</td>
+<td><input id="rebate" type="number" min="0"></td>
+</tr>
+
+<tr>
+<td class="left">SSA</td>
+<td><input id="ssa" type="number" min="0"></td>
+
+<td class="right">Others</td>
+<td><input id="othersP" type="number" min="0"></td>
+</tr>
+
+<tr>
+<td class="left">SSA Default Fee</td>
+<td><input id="ssaf" type="number" min="0"></td>
+
+<td></td>
+<td></td>
+</tr>
+
+<tr><td class="left">TD</td><td><input id="td" type="number" min="0"></td><td></td><td></td></tr>
+<tr><td class="left">RPLI</td><td><input id="rpli" type="number" min="0"></td><td></td><td></td></tr>
+<tr><td class="left">PLI</td><td><input id="pli" type="number" min="0"></td><td></td><td></td></tr>
+<tr><td class="left">IPPB</td><td><input id="ippb" type="number" min="0"></td><td></td><td></td></tr>
+<tr><td class="left">MO Issued</td><td><input id="mo" type="number" min="0"></td><td></td><td></td></tr>
+<tr><td class="left">Speed/Parcel</td><td><input id="sp" type="number" min="0"></td><td></td><td></td></tr>
+<tr><td class="left">COD/COD-Retail</td><td><input id="cod" type="number" min="0"></td><td></td><td></td></tr>
+<tr><td class="left">Postage Sold</td><td><input id="postage" type="number" min="0"></td><td></td><td></td></tr>
+<tr><td class="left">Revenue Sold</td><td><input id="revenue" type="number" min="0"></td><td></td><td></td></tr>
+<tr><td class="left">RDF/CD/Unpaid</td><td><input id="rdfcd" type="number" min="0"></td><td></td><td></td></tr>
+<tr><td class="left">Others</td><td><input id="othersR" type="number" min="0"></td><td></td><td></td></tr>
+
+<tr>
+<td class="left">TOTAL RECEIPTS</td>
+<td id="recTotal" style="font-weight:bold;">0</td>
+
+<td class="right">TOTAL PAYMENTS</td>
+<td id="payTotal" style="font-weight:bold;">0</td>
+</tr>
+
+<tr style="background:var(--closing-color);">
+<td colspan="3"><b>Closing Balance</b></td>
+<td id="closing" style="font-weight:bold;">0</td>
+</tr>
+
+<tr>
+<td colspan="4" class="stamps">
+<b>STAMPS</b>
+</td>
+</tr>
+
+<tr>
+<td class="stamps">PS Received</td>
+<td><input id="psr" type="number" min="0"></td>
+
+<td class="stamps">PS Balance</td>
+<td><input id="psb" type="number" min="0"></td>
+</tr>
+
+<tr>
+<td class="stamps">RS Received</td>
+<td><input id="rsr" type="number" min="0"></td>
+
+<td class="stamps">RS Balance</td>
+<td><input id="rsb" type="number" min="0"></td>
+</tr>
+
+<tr style="background:var(--cashstamp-color);">
+<td colspan="3"><b>Cash + Stamps</b></td>
+<td id="cashStamps"style="font-weight:bold;">0</td>
+</tr>
+
+</table>
+
+<br><br>
+
+<center>
+
+<h1>CASH DENOMINATION</h1>
+
+<table class="cash-table">
+
+<tr>
+<th style="width:33%;"></th>
+<th style="width:33%;">Count</th>
+<th style="width:34%;">Total</th>
+</tr>
+
+<tr><td>500</td><td><input type="number" id="d500"></td><td id="t500">0</td></tr>
+<tr><td>200</td><td><input type="number" id="d200"></td><td id="t200">0</td></tr>
+<tr><td>100</td><td><input type="number" id="d100"></td><td id="t100">0</td></tr>
+<tr><td>50</td><td><input type="number" id="d50"></td><td id="t50">0</td></tr>
+<tr><td>20</td><td><input type="number" id="d20"></td><td id="t20">0</td></tr>
+<tr><td>10</td><td><input type="number" id="d10"></td><td id="t10">0</td></tr>
+<tr><td>Coins</td><td><input type="number" id="coins"></td><td id="tcoins">0</td></tr>
+
+<tr style="font-weight:bold;background:#eee;">
+<td colspan="2">Total</td>
+<td id="denTotal">0</td>
+</tr>
+
+<tr style="font-weight:bold;">
+<td colspan="2" id="mismatchd">Mismatch</td>
+<td id="denMismatch">0</td>
+</tr>
+
+</table>
+<br>
+<h3><a href="scripts/baglabel.html">BAG BARCODE LABEL</a></h3><br><h3><a href="scripts/remittance.html">CASH REMITTANCE LABEL</a></h3>
+<br>
+
+<div style="margin-top:10px;">
+  <button onclick="downloadJSON()">Download JSON</button>
+
+  <input
+    type="file"
+    id="jsonUpload"
+    accept="application/json"
+    style="display:none"
+    onchange="uploadJSON(event)"
+  >
+
+  <button onclick="document.getElementById('jsonUpload').click()">
+    Upload JSON
+  </button>
+  <button onclick="deleteAllData()" style="background:red;">
+  Delete All Data
+</button>
+</div>
+<br>
+
+<h3>Monthly Report</h3>
+
+<input type="month" id="month">
+
+<button onclick="generateReport()">OK</button>
+
+
+<div id="report"></div>
+
+</center>
+
+<script>
+let db;
+const date=document.getElementById("date");
+const report=document.getElementById("report");
+const recFields=["opening","received","sb","rd","rdf","ssa","ssaf","td","rpli","pli","ippb","mo","sp","cod","postage","revenue","rdfcd","othersR"];
+const recOnly=recFields;
+const payFields=["cashSent","sbw","ippbw","mopaid","rebate","othersP"];
+
+function num(v){return Number(v)||0;}
+
+const request=indexedDB.open("BO_DB",1);
+request.onupgradeneeded=e=>{
+  let db=e.target.result;
+  if(!db.objectStoreNames.contains("daily")){
+    db.createObjectStore("daily",{keyPath:"date"});
+  }
+};
+
+request.onsuccess=e=>{
+  db=e.target.result;
+  date.value=new Date().toISOString().split("T")[0];
+  loadDay();
+};
+
+function prevDay(){ let d=new Date(date.value); d.setDate(d.getDate()-1); date.value=d.toISOString().split("T")[0]; loadDay(); }
+function nextDay(){ let d=new Date(date.value); d.setDate(d.getDate()+1); date.value=d.toISOString().split("T")[0]; loadDay(); }
+
+function loadDay(){
+  db.transaction("daily","readonly").objectStore("daily").get(date.value).onsuccess=e=>{
+    let d=e.target.result;
+    document.querySelectorAll("input").forEach(i=>{ if(i.id!="date" && i.id!="month") i.value=""; });
+    if(d){ for(let k in d){ if(document.getElementById(k)) document.getElementById(k).value=d[k]; }}
+    applyLogic();
+    calcDenomination();
+  };
+}
+
+function isFirstDay(d){return d.endsWith("-01");}
+
+function applyLogic(){
+  db.transaction("daily","readonly").objectStore("daily").getAll().onsuccess=e=>{
+    let all=e.target.result.sort((a,b)=>a.date.localeCompare(b.date));
+    let prev=all.filter(x=>x.date<date.value).pop();
+
+    let openingVal;
+    if(isFirstDay(date.value)){
+      opening.readOnly=false;
+      openingVal=num(opening.value);
+    }else{
+      opening.readOnly=true;
+      openingVal=prev?num(prev.closing):0;
+      opening.value=openingVal;
+    }
+
+    let psbVal, rsbVal;
+    if(isFirstDay(date.value)){
+      psb.readOnly=false; rsb.readOnly=false;
+      psbVal=num(psb.value); rsbVal=num(rsb.value);
+    }else{
+      psb.readOnly=true; rsb.readOnly=true;
+      psbVal=(prev?num(prev.psb):0)+num(psr.value)-num(postage.value);
+      rsbVal=(prev?num(prev.rsb):0)+num(rsr.value)-num(revenue.value);
+      psb.value=psbVal; rsb.value=rsbVal;
+    }
+
+    calculate(openingVal,psbVal,rsbVal);
+  };
+}
+
+function calculate(openingVal,psbVal,rsbVal){
+  let rec=recOnly.reduce((s,f)=>s+num(document.getElementById(f).value),0);
+  let pay=payFields.reduce((s,f)=>s+num(document.getElementById(f).value),0);
+
+  recTotal.innerText=rec;
+  payTotal.innerText=pay;
+
+  let closing=rec-pay;
+  document.getElementById("closing").innerText=closing;
+
+  let total=closing+psbVal+rsbVal;
+  cashStamps.innerText=total;
+
+  save(openingVal,closing,psbVal,rsbVal);
+  calcDenomination();
+}
+
+function save(openingVal,closing,psbVal,rsbVal){
+  let data={date:date.value,opening:openingVal,closing,psb:psbVal,rsb:rsbVal};
+  document.querySelectorAll("input").forEach(i=>{ if(i.id!="date") data[i.id]=i.value; });
+  db.transaction("daily","readwrite").objectStore("daily").put(data).onsuccess=()=>{
+    recalcForward(date.value);
+  };
+}
+
+function recalcForward(fromDate){
+  db.transaction("daily","readwrite").objectStore("daily").getAll().onsuccess=e=>{
+    let all=e.target.result.sort((a,b)=>a.date.localeCompare(b.date));
+
+    for(let i=0;i<all.length;i++){
+      if(all[i].date<=fromDate) continue;
+
+      let prev=all[i-1];
+      let curr=all[i];
+
+      if(!prev) continue;
+
+      curr.opening = num(prev.closing);
+      curr.psb = num(prev.psb)+num(curr.psr)-num(curr.postage);
+      curr.rsb = num(prev.rsb)+num(curr.rsr)-num(curr.revenue);
+
+      let rec=recOnly.reduce((s,f)=>s+num(curr[f]),0);
+      let pay=payFields.reduce((s,f)=>s+num(curr[f]),0);
+
+      curr.closing = rec - pay;
+
+      db.transaction("daily","readwrite").objectStore("daily").put(curr);
+    }
+  };
+}
+
+function calcDenomination(){
+  let vals=[500,200,100,50,20,10];
+  let ids=["500","200","100","50","20","10"];
+  let total=0;
+
+  ids.forEach((id,i)=>{
+    let count=num(document.getElementById("d"+id).value);
+    let t=count*vals[i];
+    document.getElementById("t"+id).innerText=t;
+    total+=t;
+  });
+
+  let coin=num(coins.value);
+  tcoins.innerText=coin;
+  total+=coin;
+
+  denTotal.innerText=total;
+
+  let closingVal = num(document.getElementById("closing").innerText);
+
+let diff = total - closingVal;
+
+if(diff === 0){
+
+    denMismatch.innerText = "0";
+    mismatchd.innerText = "MATCHED";
+
+    denMismatch.style.background = "";
+    denMismatch.style.color = "";
+
+    mismatchd.style.background = "";
+    mismatchd.style.color = "";
+
+}
+else if(diff < 0){
+
+    denMismatch.innerText = Math.abs(diff);
+    mismatchd.innerText = "SHORT";
+
+    denMismatch.style.background = "red";
+    denMismatch.style.color = "white";
+
+    mismatchd.style.background = "red";
+    mismatchd.style.color = "white";
+
+}
+else{
+
+    denMismatch.innerText = diff;
+    mismatchd.innerText = "EXCESS";
+
+    denMismatch.style.background = "red";
+    denMismatch.style.color = "white";
+
+    mismatchd.style.background = "red";
+    mismatchd.style.color = "white";
+}
+}
+
+function formatDate(d){
+  let [y,m,day]=d.split("-");
+  return `${day}/${m}/${y}`;
+}
+
+function generateReport(){
+  let m=document.getElementById("month").value;
+  if(!m){ alert("Select month"); return; }
+
+  db.transaction("daily","readonly").objectStore("daily").getAll().onsuccess=e=>{
+    let data=e.target.result.filter(d=>d.date.startsWith(m)).sort((a,b)=>a.date.localeCompare(b.date));
+    if(!data.length){ report.innerHTML="No data"; return; }
+
+    let colRec={}, colPay={};
+    recOnly.forEach(f=>colRec[f]=0);
+    payFields.forEach(f=>colPay[f]=0);
+
+    let rows=data.map(d=>{
+      let rTotal=0,pTotal=0;
+
+      recOnly.forEach(f=>{
+        let v=num(d[f]);
+        rTotal+=v;
+        // Opening should be added only for first date
+        if(f==="opening"){
+          if(d.date===data[0].date){ colRec[f]+=v; }
+        }else{
+          colRec[f]+=v;
+        }
+      });
+      payFields.forEach(f=>{ let v=num(d[f]); pTotal+=v; colPay[f]+=v; });
+
+      return `<tr>
+        <td style="white-space:nowrap">${formatDate(d.date)}</td>
+        ${recFields.map(c=>`<td>${d[c]||0}</td>`).join("")}
+        <td><b>${rTotal}</b></td>
+        ${payFields.map(c=>`<td>${d[c]||0}</td>`).join("")}
+        <td><b>${pTotal}</b></td>
+        <td>${d.closing||0}</td>
+        <td>${d.psb||0}</td>
+        <td>${d.rsb||0}</td>
+      </tr>`;
+    }).join("");
+
+    let totalRow=`<tr style="font-weight:bold;background:#eee;">
+      <td>TOTAL</td>
+      
+      ${recOnly.map(f=>`<td>${colRec[f]}</td>`).join("")}
+      <td>-</td>
+      ${payFields.map(f=>`<td>${colPay[f]}</td>`).join("")}
+      <td>-</td><td>-</td><td>-</td> <td>-</td>
+    </tr>`;
+window.openingMonth =
+data[0].opening || 0;
+
+window.closingMonth =
+data[data.length-1].closing || 0;
+
+window.totalReceipts =
+Object.values(colRec)
+.reduce((a,b)=>a+b,0);
+
+window.totalPayments =
+Object.values(colPay)
+.reduce((a,b)=>a+b,0);
+
+    report.innerHTML=`
+    <table class="report-table">
+      <tr>
+        <th rowspan="2" style="width:50px">Date</th>
+        <th colspan="${recFields.length+1}">RECEIPTS</th>
+        <th colspan="${payFields.length+1}">PAYMENTS</th>
+        <th rowspan="2">Closing Balance</th>
+        
+        <th rowspan="2">PS</th>
+        <th rowspan="2">RS</th>
+      </tr>
+      <tr>
+        <th>Opening Balance</th><th>Cash Received</th><th>SB</th><th>RD</th><th>RD Default Fee</th><th>SSA</th><th>SSA Default Fee</th><th>TD</th><th>RPLI</th><th>PLI</th><th>IPPB</th><th>MO Issued</th><th>Speed/ Parcel</th><th>COD/ COD Retail</th><th>Postage Sold</th><th>Revenue Sold</th><th>RDF/CD/ Unpaid</th><th>Others</th>
+        <th>Total</th>
+        <th>Cash Sent</th><th>SB-W</th><th>IPPB-W</th><th>MO Paid</th><th>Rebate</th><th>Others</th>
+        <th>Total</th>
+      </tr>
+      ${rows}
+      ${totalRow}
+ <tr><th>-</th>
+        <th>Opening Balance</th><th>Cash Received</th><th>SB</th><th>RD</th><th>RD Default Fee</th><th>SSA</th><th>SSA Default Fee</th><th>TD</th><th>RPLI</th><th>PLI</th><th>IPPB</th><th>MO Issued</th><th>Speed/ Parcel</th><th>COD/ COD Retail</th><th>Postage Sold</th><th>Revenue Sold</th><th>RDF/CD/ Unpaid</th><th>Others</th>
+        <th>-</th>
+        <th>Cash Sent</th><th>SB-W</th><th>IPPB-W</th><th>MO Paid</th><th>Rebate</th><th>Others</th>
+        <th>-</th><th>-</th><th>-</th><th>-</th>
+      </tr>
+   
+        </table>
+    <br>
+<center>
+    <table style="width:300px">
+         <tr><td>Opening Balance</td><td style="width:100px">${openingMonth}</td></tr>
+        <tr><td>Total Receipts</td><td>${totalReceipts}</td></tr>
+        <tr><td>Total Payments</td><td>${totalPayments}</td></tr>
+        <tr><td>Closing Balance</td><td>${closingMonth}</td></tr>
+    </table>
+    <button class="print-hide" onclick="downloadPDF()">
+DOWNLOAD PDF
+</button>
+
+</center>`;
+  };
+}
+
+function exportPDF(){ if(!report.innerHTML){ alert("Generate report first"); return; } window.print(); }
+
+function downloadJSON(){
+  db.transaction("daily","readonly")
+    .objectStore("daily")
+    .getAll().onsuccess=e=>{
+
+      const data=e.target.result;
+
+      const blob=new Blob(
+        [JSON.stringify(data,null,2)],
+        {type:"application/json"}
+      );
+
+      const url=URL.createObjectURL(blob);
+
+      const a=document.createElement("a");
+      a.href=url;
+      a.download="BO_DB_Backup.json";
+      a.click();
+
+      URL.revokeObjectURL(url);
+    };
+}
+
+function uploadJSON(event){
+  const file=event.target.files[0];
+
+  if(!file) return;
+
+  const reader=new FileReader();
+
+  reader.onload=function(e){
+    try{
+      const data=JSON.parse(e.target.result);
+
+      if(!Array.isArray(data)){
+        alert("Invalid backup file");
+        return;
+      }
+
+      const tx=db.transaction("daily","readwrite");
+      const store=tx.objectStore("daily");
+
+      data.forEach(item=>store.put(item));
+
+      tx.oncomplete=()=>{
+        alert("Data imported successfully");
+        loadDay();
+      };
+
+    }catch(err){
+      alert("Invalid JSON file");
+    }
+  };
+  
+
+  reader.readAsText(file);
+
+  event.target.value="";
+}
+function deleteAllData(){
+
+    const pin = prompt(
+        "Enter 0000 to delete all data"
+    );
+
+    if(pin === null){
+        return;
+    }
+
+    if(pin !== "0000"){
+
+        alert("Incorrect PIN");
+
+        return;
+    }
+
+    const confirmDelete = confirm(
+        "Delete ALL IndexedDB data permanently?"
+    );
+
+    if(!confirmDelete){
+        return;
+    }
+
+    const tx =
+    db.transaction(
+        "daily",
+        "readwrite"
+    );
+
+    const store =
+    tx.objectStore("daily");
+
+    const clearRequest =
+    store.clear();
+
+    clearRequest.onsuccess = ()=>{
+
+        alert("All data deleted");
+
+        document
+        .querySelectorAll("input")
+        .forEach(i=>{
+
+            if(
+                i.id!="date" &&
+                i.id!="month"
+            ){
+                i.value="";
+            }
+        });
+
+        recTotal.innerText = "0";
+        payTotal.innerText = "0";
+        closing.innerText = "0";
+        cashStamps.innerText = "0";
+        denTotal.innerText = "0";
+
+        denMismatch.innerText = "0";
+
+        mismatchd.innerText = "Mismatch";
+
+        denMismatch.style.background = "";
+        denMismatch.style.color = "";
+
+        mismatchd.style.background = "";
+        mismatchd.style.color = "";
+
+        report.innerHTML = "";
+
+        loadDay();
+    };
+
+    clearRequest.onerror = ()=>{
+
+        alert(
+            "Error deleting data"
+        );
+    };
+}
+
+document.querySelectorAll("input").forEach(i=>{
+  if(i.id!="date") i.addEventListener("input",()=>{applyLogic();calcDenomination();});
+});
+
+date.addEventListener("change",loadDay);
+</script>
+
+
+<script>
+
+async function downloadPDF(){
+
+    const monthInput =
+    document.getElementById("month").value;
+
+    if(!monthInput){
+        alert("Select month");
+        return;
+    }
+
+    const [year,month] =
+    monthInput.split("-");
+
+    const monthNames = [
+        "January","February","March",
+        "April","May","June",
+        "July","August","September",
+        "October","November","December"
+    ];
+
+    const monthYear =
+    monthNames[Number(month)-1]
+    + " " + year;
+
+    try{
+
+        if(!report.innerHTML){
+            alert("Generate report first");
+            return;
+        }
+
+        const reportTable =
+        document.querySelector("#report table");
+
+        if(!reportTable){
+            alert("Table not found");
+            return;
+        }
+
+        const { jsPDF } = window.jspdf;
+
+        const pdf = new jsPDF({
+            orientation:"landscape",
+            unit:"mm",
+            format:"a3"
+        });
+
+        /* TITLE */
+
+        pdf.setFontSize(20);
+
+        pdf.setTextColor(0,0,0);
+
+        pdf.setFont(
+            undefined,
+            "bold"
+        );
+
+        const pageWidth =
+        pdf.internal.pageSize.getWidth();
+
+        pdf.text(
+            "BO MONTHLY REPORT - " + monthYear,
+            pageWidth / 2,
+            12,
+            {align:"center"}
+        );
+
+        /* TABLE */
+
+        pdf.autoTable({
+
+            html:"#report table",
+
+            startY:18,
+
+            theme:"grid",
+
+            styles:{
+                fontSize:10,
+
+                cellPadding:1,
+
+                halign:"center",
+
+                valign:"middle",
+
+                overflow:"linebreak",
+
+                fontStyle:"normal",
+
+                textColor:[0,0,0],
+
+                lineColor:[0,0,0],
+
+                lineWidth:0.1
+            },
+
+            headStyles:{
+
+                fontStyle:"bold",
+
+                fillColor:[220,220,220],
+
+                textColor:[0,0,0],
+
+                lineColor:[0,0,0],
+
+                lineWidth:0.2
+            },
+
+            bodyStyles:{
+
+                textColor:[0,0,0],
+
+                fillColor:[255,255,255]
+            },
+
+            alternateRowStyles:{
+
+                fillColor:[240,240,240]
+            },
+
+            margin:{
+                top:18,
+                left:5,
+                right:5
+            },
+
+            horizontalPageBreak:false,
+
+            didParseCell:function(data){
+
+                /* HEADER ROW */
+
+                if(data.section === "head"){
+
+                    data.cell.styles.fontStyle =
+                    "bold";
+                }
+
+                /* DATE COLUMN */
+
+                if(data.column.index === 0){
+
+                    data.cell.styles.fontStyle =
+                    "bold";
+                }
+
+                /* TOTAL ROW */
+
+                if(
+                    data.row.raw &&
+                    data.row.raw.innerText &&
+                    data.row.raw.innerText.includes("TOTAL")
+                ){
+
+                    data.cell.styles.fontStyle =
+                    "bold";
+                }
+
+                /* CUSTOM HEADERS */
+
+                const text =
+                String(data.cell.raw || "")
+                .trim();
+
+                const boldHeaders = [
+
+                    "Opening Balance",
+                    "Cash Received",
+                    "SB",
+                    "RD",
+                    "RD Default Fee",
+                    "SSA",
+                    "SSA Default Fee",
+                    "TD",
+                    "RPLI",
+                    "PLI",
+                    "IPPB",
+                    "MO Issued",
+                    "Speed/ Parcel",
+                    "COD/ COD Retail",
+                    "Postage Sold",
+                    "Revenue Sold",
+                    "RDF/CD/ Unpaid",
+                    "Others",
+
+                    "Cash Sent",
+                    "SB-W",
+                    "IPPB-W",
+                    "MO Paid",
+                    "Rebate",
+
+                    "Total",
+                    "Closing Balance",
+                    "PS",
+                    "RS",
+
+                    "RECEIPTS",
+                    "PAYMENTS"
+                ];
+
+                if(
+                    boldHeaders.includes(text)
+                ){
+
+                    data.cell.styles.fontStyle =
+                    "bold";
+                }
+            }
+        });
+
+        /* SUMMARY TABLE */
+
+        let finalY = 200;
+
+        if(pdf.previousAutoTable){
+
+            finalY =
+            pdf.previousAutoTable.finalY + 0;
+        }
+
+        pdf.setFontSize(10);
+
+        pdf.setFont(
+            undefined,
+            "bold"
+        );
+
+        
+
+       const summaryBody = [
+
+    ["Opening Balance", window.openingMonth || 0],
+
+    ["Total Receipts", window.totalReceipts || 0],
+
+    ["Total Payments", window.totalPayments || 0],
+
+    ["Closing Balance", window.closingMonth || 0]
+];
+
+const summaryWidth = 110;
+
+const centerX =
+(pageWidth - summaryWidth) / 2;
+
+pdf.autoTable({
+
+    startY: finalY + 3,
+
+    body: summaryBody,
+
+    theme:"grid",
+
+    styles:{
+        fontSize:10,
+
+        fontStyle:"bold",
+
+        halign:"center",
+
+        valign:"middle",
+
+        textColor:[0,0,0],
+
+        lineColor:[0,0,0],
+
+        lineWidth:0.2
+    },
+
+    bodyStyles:{
+        fillColor:[255,255,255]
+    },
+
+    columnStyles:{
+        0:{cellWidth:70},
+        1:{cellWidth:40}
+    },
+
+    margin:{
+        left:centerX
+    },
+
+    tableWidth:summaryWidth
+});
+        pdf.save(
+            "BO_Monthly_Report_" +
+            monthYear +
+            ".pdf"
+        );
+
+    }catch(err){
+
+        console.error(err);
+
+        alert(
+            "PDF Error: " + err.message
+        );
+    }
+}
+
+
+</script>
+<!-- KEEP YOUR ORIGINAL JAVASCRIPT BELOW WITHOUT CHANGES -->
+<!-- YOUR ORIGINAL HTML + JAVASCRIPT REMAINS SAME -->
+</body>
+</html>
